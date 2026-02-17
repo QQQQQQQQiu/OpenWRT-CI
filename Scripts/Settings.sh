@@ -55,7 +55,7 @@ if [[ "${WRT_TARGET^^}" == *"QUALCOMMAX"* ]]; then
 	echo "CONFIG_PACKAGE_sqm-scripts-nss=y" >> ./.config
 	#设置NSS版本
 	echo "CONFIG_NSS_FIRMWARE_VERSION_11_4=n" >> ./.config
-	echo "CONFIG_NSS_FIRMWARE_VERSION_11_4=y" >> ./.config
+	echo "CONFIG_NSS_FIRMWARE_VERSION_11_2=y" >> ./.config
 	#无WIFI配置调整Q6大小
 	
 	#其他调整
