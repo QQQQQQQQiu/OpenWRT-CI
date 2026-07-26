@@ -2,7 +2,11 @@
 # SPDX-License-Identifier: MIT
 # Copyright (C) 2026 VIKINGYFY
 
-PKG_PATH="$GITHUB_WORKSPACE/wrt/package/"
+if [ -n "${GITHUB_WORKSPACE:-}" ] && [ -d "$GITHUB_WORKSPACE/wrt/package" ]; then
+	PKG_PATH="$GITHUB_WORKSPACE/wrt/package"
+else
+	PKG_PATH="$(pwd)"
+fi
 
 
 #修改mini-diskmanager菜单位置
