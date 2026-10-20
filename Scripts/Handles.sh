@@ -2,31 +2,34 @@
 # SPDX-License-Identifier: MIT
 # Copyright (C) 2026 VIKINGYFY
 
-if [ -n "${GITHUB_WORKSPACE:-}" ] && [ -d "$GITHUB_WORKSPACE/wrt/package" ]; then
-	PKG_PATH="$GITHUB_WORKSPACE/wrt/package"
-else
-	PKG_PATH="$(pwd)"
-fi
+FEEDS_PATH="./feeds"
+PACKAGE_PATH="./package"
 
+#修补命令统一入口：FIX <名称> <守卫目录> <命令...>
+#守卫目录不存在时直接跳过，保证在 bash -e 下不中断
+FIX() {
+	local NAME=$1
+	local GUARD=$2
+	shift 2
+
+	[ -d "$GUARD" ] || return 0
+
+	echo " "
+	if "$@"; then
+		echo "$NAME has been fixed!"
+	else
+		echo "$NAME fix failed; continuing!"
+	fi
+}
 
 #修改mini-diskmanager菜单位置
-if [ -d *"luci-app-mini-diskmanager"* ]; then
-	echo " " && cd ./luci-app-mini-diskmanager/
+FIX "mini-diskmanager" "$PACKAGE_PATH/luci-app-mini-diskmanager" sed -i "s/services/system/g" \
+	"$PACKAGE_PATH/luci-app-mini-diskmanager/luci-app-mini-diskmanager/root/usr/share/luci/menu.d/luci-app-mini-diskmanager.json"
 
-	sed -i "s/services/system/g" ./luci-app-mini-diskmanager/root/usr/share/luci/menu.d/luci-app-mini-diskmanager.json
-
-	cd $PKG_PATH && echo "mini-diskmanager has been fixed!"
-fi
-
+#修改natmapt菜单位置
+FIX "natmapt" "$PACKAGE_PATH/luci-app-natmapt" sed -i "s/network/services/g" \
+	"$PACKAGE_PATH/luci-app-natmapt/root/usr/share/luci/menu.d/luci-app-natmap.json"
 
 #修复Rust编译失败
-RUST_FILE="$(find "$FEEDS_PACKAGES" -maxdepth 3 -type f -wholename '*/rust/Makefile' -print -quit 2>/dev/null)"
-if [ -f "$RUST_FILE" ]; then
-	echo " "
-
-	if sed -i 's/ci-llvm=true/ci-llvm=false/g' "$RUST_FILE"; then
-		echo "rust has been fixed!"
-	else
-		echo "rust fix failed; continuing!"
-	fi
-fi
+FIX "rust" "$FEEDS_PATH/packages/lang/rust" sed -i 's/ci-llvm=true/ci-llvm=false/g' \
+	"$FEEDS_PATH/packages/lang/rust/Makefile"
